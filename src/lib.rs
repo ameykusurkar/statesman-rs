@@ -1,6 +1,8 @@
 mod adapters;
 mod machine;
 
+use crate::machine::State;
+
 #[derive(Clone, Copy, PartialEq, Debug)]
 enum TrafficLight {
     Amber,
@@ -8,7 +10,7 @@ enum TrafficLight {
     Red,
 }
 
-impl machine::Definition for TrafficLight {
+impl State for TrafficLight {
     fn can_transition_to(&self, to_state: TrafficLight) -> bool {
         match (self, to_state) {
             (TrafficLight::Amber, TrafficLight::Red | TrafficLight::Green) => true,

@@ -1,23 +1,23 @@
-use crate::machine::{self, Machine};
+use crate::machine::{State, Machine};
 
-pub struct InMemory<T> {
-    history: Vec<T>,
+pub struct InMemory<S> {
+    history: Vec<S>,
 }
 
-impl<T> InMemory<T> {
-    pub fn new(state: T) -> Self {
+impl<S> InMemory<S> {
+    pub fn new(state: S) -> Self {
         Self {
             history: vec![state],
         }
     }
 }
 
-impl<T: machine::Definition + Copy> Machine<T> for InMemory<T> {
-    fn history(&self) -> &Vec<T> {
+impl<S: State + Copy> Machine<S> for InMemory<S> {
+    fn history(&self) -> &Vec<S> {
         &self.history
     }
 
-    fn create_transition(&mut self, to_state: T) {
+    fn create_transition(&mut self, to_state: S) {
         self.history.push(to_state);
     }
 }

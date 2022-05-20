@@ -25,7 +25,7 @@ impl State for TrafficLight {
 mod tests {
     use super::*;
     use crate::adapters::InMemory;
-    use crate::machine::Machine;
+    use crate::machine::{Machine, Transition};
 
     #[test]
     fn it_works() {
@@ -34,9 +34,27 @@ mod tests {
         let result = machine.transition_to(TrafficLight::Green);
         assert_eq!(result, false);
         assert_eq!(machine.current_state(), TrafficLight::Red);
+        assert_eq!(
+            machine.history(),
+            &vec![Transition::new(TrafficLight::Red, 10)],
+        );
 
         let result = machine.transition_to(TrafficLight::Amber);
         assert_eq!(result, true);
         assert_eq!(machine.current_state(), TrafficLight::Amber);
+        assert_eq!(
+            machine.history(),
+            &vec![
+                Transition::new(TrafficLight::Red, 10),
+                Transition::new(TrafficLight::Amber, 20),
+            ],
+        );
+
+        machine.transition_to(TrafficLight::Red);
+        assert_eq!(
+            machine.last_transition_to(TrafficLight::Red),
+            Some(&Transition::new(TrafficLight::Red, 30)),
+        );
+        assert_eq!(machine.last_transition_to(TrafficLight::Green), None);
     }
 }

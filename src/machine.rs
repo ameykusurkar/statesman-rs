@@ -3,7 +3,12 @@ pub trait Definition {
 }
 
 pub trait Machine<T: Definition + Copy> {
-    fn current_state(&self) -> T;
+    fn history(&self) -> &Vec<T>;
+
+    fn current_state(&self) -> T {
+        let history = self.history();
+        history[history.len() - 1]
+    }
     fn create_transition(&mut self, to_state: T);
 
     fn can_transition_to(&self, to_state: T) -> bool {

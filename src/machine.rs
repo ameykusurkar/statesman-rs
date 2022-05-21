@@ -2,22 +2,33 @@ pub trait State {
     fn can_transition_to(&self, to_state: Self) -> bool;
 }
 
-pub trait Machine<S: State + Copy + PartialEq> {
-    fn history(&self) -> &Vec<Transition<S>>;
+pub trait StateTransition<S: State + Copy> {
+    fn create_transition(to_state: S, sort_key: u32) -> Self;
+    fn sort_key(&self) -> u32;
+    fn to_state(&self) -> S;
+}
+
+pub trait Machine<S>
+where
+    S: State + Copy + PartialEq,
+{
+    type Transition: StateTransition<S>;
+
+    fn history(&self) -> &Vec<Self::Transition>;
 
     fn create_transition(&mut self, to_state: S);
 
     fn current_state(&self) -> S {
-        self.last_transition().to_state
+        self.last_transition().to_state()
     }
 
-    fn last_transition(&self) -> &Transition<S> {
+    fn last_transition(&self) -> &Self::Transition {
         let history = self.history();
         &history[history.len() - 1]
     }
 
-    fn last_transition_to(&self, state: S) -> Option<&Transition<S>> {
-        self.history().iter().rev().find(|t| t.to_state == state)
+    fn last_transition_to(&self, state: S) -> Option<&Self::Transition> {
+        self.history().iter().rev().find(|t| t.to_state() == state)
     }
 
     fn can_transition_to(&self, to_state: S) -> bool {
@@ -31,25 +42,5 @@ pub trait Machine<S: State + Copy + PartialEq> {
         } else {
             false
         }
-    }
-}
-
-#[derive(PartialEq, Debug)]
-pub struct Transition<S: State> {
-    to_state: S,
-    sort_key: u32,
-}
-
-impl<S: State + Copy> Transition<S> {
-    pub fn new(to_state: S, sort_key: u32) -> Self {
-        Self { to_state, sort_key }
-    }
-
-    pub fn to_state(&self) -> S {
-        self.to_state
-    }
-
-    pub fn sort_key(&self) -> u32 {
-        self.sort_key
     }
 }

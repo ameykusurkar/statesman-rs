@@ -1,6 +1,6 @@
 use state_derive::State;
-use statesman::adapters::InMemory;
-use statesman::machine::{Machine, State, Transition};
+use statesman::adapters::{InMemory, InMemoryTransition};
+use statesman::machine::{Machine, State};
 
 #[derive(Clone, Copy, PartialEq, Debug, State)]
 enum Order {
@@ -44,15 +44,15 @@ fn it_works() {
     assert_eq!(
         machine.history(),
         &vec![
-            Transition::new(Order::Pending, 10),
-            Transition::new(Order::CheckingOut, 20),
-            Transition::new(Order::Purchased, 30),
-            Transition::new(Order::Failed, 40),
+            InMemoryTransition::new(Order::Pending, 10),
+            InMemoryTransition::new(Order::CheckingOut, 20),
+            InMemoryTransition::new(Order::Purchased, 30),
+            InMemoryTransition::new(Order::Failed, 40),
         ],
     );
     assert_eq!(
         machine.last_transition_to(Order::CheckingOut),
-        Some(&Transition::new(Order::CheckingOut, 20)),
+        Some(&InMemoryTransition::new(Order::CheckingOut, 20)),
     );
     assert_eq!(machine.last_transition_to(Order::Shipped), None);
     assert_eq!(machine.last_transition_to(Order::Cancelled), None);

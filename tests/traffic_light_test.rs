@@ -1,51 +1,72 @@
-use statesman::adapters::InMemory;
-use statesman::machine::{Machine, State, Transition};
+use statesman::adapters::{InMemory, InMemoryTransition};
+use statesman::machine::{Machine, State};
 
-#[derive(Clone, Copy, PartialEq, Debug)]
-enum TrafficLight {
+use state_derive::State;
+
+#[derive(Clone, Copy, PartialEq, Debug, State)]
+enum TrafficLightState {
+    #[can_transition_to(Red)]
+    #[can_transition_to(Green)]
     Amber,
+
+    #[can_transition_to(Amber)]
     Green,
+
+    #[can_transition_to(Amber)]
     Red,
 }
 
-impl State for TrafficLight {
-    fn can_transition_to(&self, to_state: Self) -> bool {
-        match (self, to_state) {
-            (TrafficLight::Amber, TrafficLight::Red | TrafficLight::Green) => true,
-            (TrafficLight::Green, TrafficLight::Amber) => true,
-            (TrafficLight::Red, TrafficLight::Amber) => true,
-            (_, _) => false,
+struct TrafficLight {
+    state_machine: InMemory<TrafficLightState>,
+}
+
+impl TrafficLight {
+    fn new(to_state: TrafficLightState) -> Self {
+        Self {
+            state_machine: InMemory::new(to_state),
         }
+    }
+}
+
+impl Machine<TrafficLightState> for TrafficLight {
+    type Transition = InMemoryTransition<TrafficLightState>;
+
+    fn history(&self) -> &Vec<Self::Transition> {
+        &self.state_machine.history()
+    }
+
+    fn create_transition(&mut self, to_state: TrafficLightState) {
+        self.state_machine.create_transition(to_state)
     }
 }
 
 #[test]
 fn it_works() {
-    let mut machine = InMemory::new(TrafficLight::Red);
+    let mut light = TrafficLight::new(TrafficLightState::Red);
 
-    let result = machine.transition_to(TrafficLight::Green);
+    let result = light.transition_to(TrafficLightState::Green);
     assert_eq!(result, false);
-    assert_eq!(machine.current_state(), TrafficLight::Red);
+    assert_eq!(light.current_state(), TrafficLightState::Red);
     assert_eq!(
-        machine.history(),
-        &vec![Transition::new(TrafficLight::Red, 10)],
+        light.history(),
+        &vec![InMemoryTransition::new(TrafficLightState::Red, 10)],
     );
 
-    let result = machine.transition_to(TrafficLight::Amber);
+    let result = light.transition_to(TrafficLightState::Amber);
     assert_eq!(result, true);
-    assert_eq!(machine.current_state(), TrafficLight::Amber);
+    assert_eq!(light.current_state(), TrafficLightState::Amber);
     assert_eq!(
-        machine.history(),
+        light.history(),
         &vec![
-            Transition::new(TrafficLight::Red, 10),
-            Transition::new(TrafficLight::Amber, 20),
+            InMemoryTransition::new(TrafficLightState::Red, 10),
+            InMemoryTransition::new(TrafficLightState::Amber, 20),
         ],
     );
 
-    machine.transition_to(TrafficLight::Red);
+    light.transition_to(TrafficLightState::Red);
     assert_eq!(
-        machine.last_transition_to(TrafficLight::Red),
-        Some(&Transition::new(TrafficLight::Red, 30)),
+        light.last_transition_to(TrafficLightState::Red),
+        Some(&InMemoryTransition::new(TrafficLightState::Red, 30)),
     );
-    assert_eq!(machine.last_transition_to(TrafficLight::Green), None);
+    assert_eq!(light.last_transition_to(TrafficLightState::Green), None);
 }

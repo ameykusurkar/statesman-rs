@@ -1,6 +1,5 @@
-use statesman::adapters::InMemory;
-use statesman::machine::{Machine, State, Transition};
 use state_derive::State;
+use statesman::machine::State;
 
 #[derive(Clone, Copy, PartialEq, Debug, State)]
 enum TrafficLight {
@@ -25,6 +24,10 @@ fn it_allows_the_correct_transitions() {
         TrafficLight::Red.can_transition_to(TrafficLight::Amber),
         true,
     );
+    assert_eq!(
+        TrafficLight::Red.can_transition_to(TrafficLight::Red),
+        false,
+    );
 
     assert_eq!(
         TrafficLight::Amber.can_transition_to(TrafficLight::Amber),
@@ -47,35 +50,8 @@ fn it_allows_the_correct_transitions() {
         TrafficLight::Green.can_transition_to(TrafficLight::Amber),
         true,
     );
-}
-
-#[test]
-fn it_works() {
-    let mut machine = InMemory::new(TrafficLight::Red);
-
-    let result = machine.transition_to(TrafficLight::Green);
-    assert_eq!(result, false);
-    assert_eq!(machine.current_state(), TrafficLight::Red);
     assert_eq!(
-        machine.history(),
-        &vec![Transition::new(TrafficLight::Red, 10)],
+        TrafficLight::Green.can_transition_to(TrafficLight::Green),
+        false,
     );
-
-    let result = machine.transition_to(TrafficLight::Amber);
-    assert_eq!(result, true);
-    assert_eq!(machine.current_state(), TrafficLight::Amber);
-    assert_eq!(
-        machine.history(),
-        &vec![
-            Transition::new(TrafficLight::Red, 10),
-            Transition::new(TrafficLight::Amber, 20),
-        ],
-    );
-
-    machine.transition_to(TrafficLight::Red);
-    assert_eq!(
-        machine.last_transition_to(TrafficLight::Red),
-        Some(&Transition::new(TrafficLight::Red, 30)),
-    );
-    assert_eq!(machine.last_transition_to(TrafficLight::Green), None);
 }

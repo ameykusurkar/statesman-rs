@@ -1,6 +1,7 @@
 use statesman::adapters::{InMemory, InMemoryTransition};
 use statesman::machine::{Machine, State};
 
+use machine_derive::InMemoryMachine;
 use state_derive::State;
 
 #[derive(Clone, Copy, PartialEq, Debug, State)]
@@ -16,6 +17,7 @@ enum TrafficLightState {
     Red,
 }
 
+#[derive(InMemoryMachine)]
 struct TrafficLight {
     state_machine: InMemory<TrafficLightState>,
 }
@@ -25,18 +27,6 @@ impl TrafficLight {
         Self {
             state_machine: InMemory::new(to_state),
         }
-    }
-}
-
-impl Machine<TrafficLightState> for TrafficLight {
-    type Transition = InMemoryTransition<TrafficLightState>;
-
-    fn history(&self) -> &Vec<Self::Transition> {
-        &self.state_machine.history()
-    }
-
-    fn create_transition(&mut self, to_state: TrafficLightState) {
-        self.state_machine.create_transition(to_state)
     }
 }
 

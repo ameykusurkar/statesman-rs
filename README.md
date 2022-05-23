@@ -8,6 +8,8 @@ This is really just a proof-of-concept at the moment, and not intended for produ
 
 Usage for the example state machine defined in the [original README](https://github.com/gocardless/statesman#usage) would look like this.
 
+_This is a working example, see the full [integration test](tests/orders_test.rs)!_ 
+
 First define the states and transitions:
 
 ```rust

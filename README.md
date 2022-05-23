@@ -11,8 +11,7 @@ Usage for the example state machine defined in the [original README](https://git
 First define the states and transitions:
 
 ```rust
-use state_derive::State;
-use statesman::machine::State;
+use statesman::{machine::State, macros::State};
 
 #[derive(Clone, Copy, State)]
 enum OrderState {
@@ -40,9 +39,11 @@ enum OrderState {
 Then use the state machine:
 
 ```rust
-use machine_derive::InMemoryMachine;
-use statesman::adapters::InMemory;
-use statesman::machine::{Machine, Transition};
+use statesman::{
+    adapters::{InMemory, InMemoryTransition},
+    machine::Machine,
+    macros::InMemoryMachine,
+};
 
 #[derive(InMemoryMachine)]
 struct Order {
@@ -63,6 +64,6 @@ fn main() {
 
   assert_eq!(
       order.last_transition(),
-      Transition::new(OrderState::Purchased, 30),
+      InMemoryTransition::new(OrderState::Purchased, 30),
   )
 }

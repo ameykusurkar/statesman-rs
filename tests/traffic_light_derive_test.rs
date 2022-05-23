@@ -1,5 +1,4 @@
-use state_derive::State;
-use statesman::machine::State;
+use statesman::{machine::State, macros::State};
 
 #[derive(Clone, Copy, PartialEq, Debug, State)]
 enum TrafficLight {

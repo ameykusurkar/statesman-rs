@@ -1,8 +1,8 @@
-use machine_derive::InMemoryMachine;
-use state_derive::State;
-
-use statesman::adapters::{InMemory, InMemoryTransition};
-use statesman::machine::{Machine, State};
+use statesman::{
+    adapters::{InMemory, InMemoryTransition},
+    machine::{Machine, State},
+    macros::{InMemoryMachine, State},
+};
 
 #[derive(Clone, Copy, PartialEq, Debug, State)]
 enum OrderState {

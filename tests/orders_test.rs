@@ -1,9 +1,11 @@
+use machine_derive::InMemoryMachine;
 use state_derive::State;
+
 use statesman::adapters::{InMemory, InMemoryTransition};
 use statesman::machine::{Machine, State};
 
 #[derive(Clone, Copy, PartialEq, Debug, State)]
-enum Order {
+enum OrderState {
     #[can_transition_to(CheckingOut)]
     #[can_transition_to(Cancelled)]
     Pending,
@@ -24,37 +26,50 @@ enum Order {
     Refunded,
 }
 
+#[derive(InMemoryMachine)]
+struct Order {
+    state_machine: InMemory<OrderState>,
+}
+
+impl Order {
+    fn new(to_state: OrderState) -> Self {
+        Self {
+            state_machine: InMemory::new(to_state),
+        }
+    }
+}
+
 #[test]
 fn it_works() {
-    let mut machine = InMemory::new(Order::Pending);
+    let mut order = Order::new(OrderState::Pending);
 
-    machine.transition_to(Order::CheckingOut);
+    order.transition_to(OrderState::CheckingOut);
 
-    assert_eq!(machine.current_state(), Order::CheckingOut);
+    assert_eq!(order.current_state(), OrderState::CheckingOut);
 
-    let result = machine.transition_to(Order::Failed);
+    let result = order.transition_to(OrderState::Failed);
 
     assert_eq!(result, false);
-    assert_eq!(machine.current_state(), Order::CheckingOut);
+    assert_eq!(order.current_state(), OrderState::CheckingOut);
 
-    machine.transition_to(Order::Purchased);
-    machine.transition_to(Order::Failed);
+    order.transition_to(OrderState::Purchased);
+    order.transition_to(OrderState::Failed);
 
-    assert_eq!(machine.current_state(), Order::Failed);
+    assert_eq!(order.current_state(), OrderState::Failed);
     assert_eq!(
-        machine.history(),
+        order.history(),
         &vec![
-            InMemoryTransition::new(Order::Pending, 10),
-            InMemoryTransition::new(Order::CheckingOut, 20),
-            InMemoryTransition::new(Order::Purchased, 30),
-            InMemoryTransition::new(Order::Failed, 40),
+            InMemoryTransition::new(OrderState::Pending, 10),
+            InMemoryTransition::new(OrderState::CheckingOut, 20),
+            InMemoryTransition::new(OrderState::Purchased, 30),
+            InMemoryTransition::new(OrderState::Failed, 40),
         ],
     );
     assert_eq!(
-        machine.last_transition_to(Order::CheckingOut),
-        Some(&InMemoryTransition::new(Order::CheckingOut, 20)),
+        order.last_transition_to(OrderState::CheckingOut),
+        Some(&InMemoryTransition::new(OrderState::CheckingOut, 20)),
     );
-    assert_eq!(machine.last_transition_to(Order::Shipped), None);
-    assert_eq!(machine.last_transition_to(Order::Cancelled), None);
-    assert_eq!(machine.last_transition_to(Order::Refunded), None);
+    assert_eq!(order.last_transition_to(OrderState::Shipped), None);
+    assert_eq!(order.last_transition_to(OrderState::Cancelled), None);
+    assert_eq!(order.last_transition_to(OrderState::Refunded), None);
 }

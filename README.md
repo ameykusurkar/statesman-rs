@@ -15,7 +15,7 @@ use state_derive::State;
 use statesman::machine::State;
 
 #[derive(Clone, Copy, State)]
-enum Order {
+enum OrderState {
     #[can_transition_to(CheckingOut)]
     #[can_transition_to(Cancelled)]
     Pending,
@@ -40,23 +40,29 @@ enum Order {
 Then use the state machine:
 
 ```rust
+use machine_derive::InMemoryMachine;
 use statesman::adapters::InMemory;
 use statesman::machine::{Machine, Transition};
 
+#[derive(InMemoryMachine)]
+struct Order {
+    state_machine: InMemory<OrderState>,
+}
+
 fn main() {
-  let mut machine = InMemory::new(Order::Pending);
+  let mut order = Order { state_machine: InMemory::new(OrderState::Pending) };
 
-  machine.transition_to(Order::CheckingOut);
+  order.transition_to(OrderState::CheckingOut);
 
-  let result = machine.transition_to(Order::Failed);
+  let result = order.transition_to(OrderState::Failed);
 
   assert_eq!(result, false);
-  assert_eq!(machine.current_state(), Order::CheckingOut);
+  assert_eq!(order.current_state(), OrderState::CheckingOut);
 
-  machine.transition_to(Order::Purchased);
+  order.transition_to(OrderState::Purchased);
 
   assert_eq!(
-      machine.last_transition(),
-      Transition::new(Order::Purchased, 30),
+      order.last_transition(),
+      Transition::new(OrderState::Purchased, 30),
   )
 }

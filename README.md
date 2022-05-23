@@ -52,14 +52,14 @@ struct Order {
 fn main() {
   let mut order = Order { state_machine: InMemory::new(OrderState::Pending) };
 
-  order.transition_to(OrderState::CheckingOut);
+  order.transition_to(OrderState::CheckingOut).unwrap();
 
   let result = order.transition_to(OrderState::Failed);
 
-  assert_eq!(result, false);
+  assert_eq!(result.is_err(), true);
   assert_eq!(order.current_state(), OrderState::CheckingOut);
 
-  order.transition_to(OrderState::Purchased);
+  order.transition_to(OrderState::Purchased).unwrap();
 
   assert_eq!(
       order.last_transition(),

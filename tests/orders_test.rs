@@ -43,17 +43,17 @@ impl Order {
 fn it_works() {
     let mut order = Order::new(OrderState::Pending);
 
-    order.transition_to(OrderState::CheckingOut);
+    order.transition_to(OrderState::CheckingOut).unwrap();
 
     assert_eq!(order.current_state(), OrderState::CheckingOut);
 
     let result = order.transition_to(OrderState::Failed);
 
-    assert_eq!(result, false);
+    assert_eq!(result.is_err(), true);
     assert_eq!(order.current_state(), OrderState::CheckingOut);
 
-    order.transition_to(OrderState::Purchased);
-    order.transition_to(OrderState::Failed);
+    order.transition_to(OrderState::Purchased).unwrap();
+    order.transition_to(OrderState::Failed).unwrap();
 
     assert_eq!(order.current_state(), OrderState::Failed);
     assert_eq!(

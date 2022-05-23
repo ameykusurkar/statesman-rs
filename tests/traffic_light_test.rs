@@ -35,7 +35,7 @@ fn it_works() {
     let mut light = TrafficLight::new(TrafficLightState::Red);
 
     let result = light.transition_to(TrafficLightState::Green);
-    assert_eq!(result, false);
+    assert_eq!(result.is_err(), true);
     assert_eq!(light.current_state(), TrafficLightState::Red);
     assert_eq!(
         light.history(),
@@ -43,7 +43,7 @@ fn it_works() {
     );
 
     let result = light.transition_to(TrafficLightState::Amber);
-    assert_eq!(result, true);
+    assert_eq!(result, Ok(()));
     assert_eq!(light.current_state(), TrafficLightState::Amber);
     assert_eq!(
         light.history(),
@@ -53,7 +53,7 @@ fn it_works() {
         ],
     );
 
-    light.transition_to(TrafficLightState::Red);
+    light.transition_to(TrafficLightState::Red).unwrap();
     assert_eq!(
         light.last_transition_to(TrafficLightState::Red),
         Some(&InMemoryTransition::new(TrafficLightState::Red, 30)),

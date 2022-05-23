@@ -8,6 +8,9 @@ pub trait StateTransition<S: State + Copy> {
     fn to_state(&self) -> S;
 }
 
+#[derive(Debug, PartialEq)]
+pub struct TransitionFailed;
+
 pub trait Machine<S>
 where
     S: State + Copy + PartialEq,
@@ -35,12 +38,12 @@ where
         self.current_state().can_transition_to(to_state)
     }
 
-    fn transition_to(&mut self, to_state: S) -> bool {
+    fn transition_to(&mut self, to_state: S) -> Result<(), TransitionFailed> {
         if self.can_transition_to(to_state) {
             self.create_transition(to_state);
-            true
+            Ok(())
         } else {
-            false
+            Err(TransitionFailed)
         }
     }
 }
